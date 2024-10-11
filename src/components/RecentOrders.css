@@ -1,0 +1,15 @@
+/* RecentOrders.css */
+.container {
+    margin-top: 20px;
+  }
+  
+  .table th, .table td {
+    text-align: center;
+    vertical-align: middle;
+  }
+  
+  .btn {
+    font-size: 0.85rem;
+    padding: 0.25rem 0.5rem;
+  }
+  
