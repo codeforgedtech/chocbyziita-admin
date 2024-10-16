@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient';
-import { Button, Modal, Table } from 'react-bootstrap';
+import { Button, Modal } from 'react-bootstrap';
 import { FaEdit, FaTrash } from 'react-icons/fa';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -31,7 +31,11 @@ const Customers: React.FC = () => {
       if (error) {
         setError(error.message);
       } else {
-        setCustomers(data as User[]);
+        // Filter customers to only include those with customer_number starting with "R" or "G"
+        const filteredCustomers = (data as User[]).filter(customer =>
+          customer.customer_number.startsWith('R') || customer.customer_number.startsWith('G')
+        );
+        setCustomers(filteredCustomers);
       }
     };
 
@@ -82,47 +86,44 @@ const Customers: React.FC = () => {
       <h2>Kunder</h2>
       
       <table className="table table-striped">
-          <thead>
+        <thead>
+          <tr>
+            <th>Kundnummer</th>
+            <th>Kund</th>
+            <th>E-post</th>
+            <th>Telefon</th>
+            <th>Adress</th>
+            <th>Åtgärder</th>
+          </tr>
+        </thead>
+        <tbody>
+          {customers.length === 0 ? (
             <tr>
-              <th>Kundnummer</th>
-              <th>Kund</th>
-              
-              <th>E-post</th>
-              <th>Telefon</th>
-              <th>Adress</th>
-              <th>Åtgärder</th>
+              <td colSpan={6} className="text-center">Inga kunder hittades.</td>
             </tr>
-          </thead>
-          <tbody>
-            {customers.length === 0 ? (
-              <tr>
-                <td colSpan={7} className="text-center">Inga kunder hittades.</td>
+          ) : (
+            customers.map(customer => (
+              <tr key={customer.id}>
+                <td>{customer.customer_number}</td>
+                <td>{customer.first_name} {customer.last_name}</td>
+                <td>{customer.email}</td>
+                <td>{customer.phone_number}</td>
+                <td>{`${customer.address}, ${customer.postal_code} ${customer.city}`}</td>
+                <td>
+                  <div className="d-flex gap-2">
+                    <button onClick={() => handleEditCustomer(customer)} className="btn btn-link text-primary">
+                      <FaEdit />
+                    </button>
+                    <button onClick={() => handleDeleteCustomer(customer.id)} className="btn btn-link text-danger">
+                      <FaTrash />
+                    </button>
+                  </div>
+                </td>
               </tr>
-            ) : (
-              customers.map(customer => (
-                <tr key={customer.id}>
-                  <td>{customer.customer_number}</td>
-                  <td>{customer.first_name} {customer.last_name}</td>
-                  
-                  <td>{customer.email}</td>
-                  <td>{customer.phone_number}</td>
-                  <td>{`${customer.address}, ${customer.postal_code} ${customer.city}`}</td>
-                  <td>
-                    <div className="d-flex gap-2">
-                      <button onClick={() => handleEditCustomer(customer)} className="btn btn-link text-primary">
-                        <FaEdit /> 
-                      </button>
-                      <button  onClick={() => handleDeleteCustomer(customer.id)} className="btn btn-link text-danger">
-                        <FaTrash /> 
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
- 
+            ))
+          )}
+        </tbody>
+      </table>
 
       <Modal show={showEditModal} onHide={() => setShowEditModal(false)} centered>
         <Modal.Header closeButton>
@@ -232,6 +233,7 @@ const Customers: React.FC = () => {
 };
 
 export default Customers;
+
 
 
 
