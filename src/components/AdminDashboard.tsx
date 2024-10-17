@@ -19,7 +19,7 @@ const AdminDashboard: React.FC = () => {
         .from('orders')
         .select('*')
         .order('created_at', { ascending: false })
-        .limit(5);
+        
 
       if (error) {
         console.error('Error fetching orders:', error.message);

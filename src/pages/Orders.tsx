@@ -4,7 +4,8 @@ import { Button, Modal } from 'react-bootstrap';
 import { ToastContainer, toast } from 'react-toastify';
 import { FaEdit, FaTrash} from 'react-icons/fa';
 import jsPDF from 'jspdf';
-import { autoTable } from 'jspdf-autotable';
+import 'jspdf-autotable';
+import logoBase64 from '../assets/logo.png'
 import 'react-toastify/dist/ReactToastify.css';
 import { FaMagnifyingGlass } from 'react-icons/fa6';
 
@@ -157,26 +158,36 @@ const OrdersList: React.FC = () => {
 
   const handleDownloadInvoice = () => {
     const invoiceData = generateInvoiceData();
-    if (!invoiceData || !selectedOrder) return; // Kontrollera att både invoiceData och selectedOrder inte är null
+    if (!invoiceData || !selectedOrder) return;
 
     const doc = new jsPDF();
-    const { title, customerName, email, shippingAddress, items, totalPrice, invoiceNumber } = invoiceData;
 
-    // Add title and invoice number
-    doc.setFontSize(22);
-    doc.text(`${title} - ${invoiceNumber}`, 20, 20); // Include invoice number in the title
+    // Add logo
+    doc.addImage(logoBase64, 'PNG', 20, 10, 50, 20); 
 
-    // Customer details
+    // Add company information
     doc.setFontSize(12);
-    doc.text(`Namn: ${customerName}`, 20, 40);
-    doc.text(`Epost: ${email}`, 20, 50);
-    doc.text(`Leveransadress: ${shippingAddress}`, 20, 60);
+    doc.text('Företagsnamn', 150, 20);
+    doc.text('Adress', 150, 30);
+    doc.text('Telefon: 123 456 789', 150, 40);
+    doc.text('E-post: info@foretag.com', 150, 50);
+    doc.text(`Faktura nr: ${invoiceData.invoiceNumber}`, 150, 60);
 
-    // Product table
-    autoTable(doc, {
-        startY: 70,
+    // Add invoice details (after logo and company info)
+    doc.setFontSize(22);
+    doc.text(`${invoiceData.title}`, 20, 40);
+
+    // Add customer info
+    doc.setFontSize(12);
+    doc.text(`Namn: ${invoiceData.customerName}`, 20, 60);
+    doc.text(`E-post: ${invoiceData.email}`, 20, 70);
+    doc.text(`Leveransadress: ${invoiceData.shippingAddress}`, 20, 80);
+
+    // Add product table
+    doc.autoTable({
+        startY: 90,
         head: [['Produkt', 'Pris (SEK)', 'Moms (%)', 'Kvantitet', 'Totalt (SEK)']],
-        body: items.map(item => [
+        body: invoiceData.items.map(item => [
             item.name,
             item.price,
             item.tax,
@@ -185,13 +196,16 @@ const OrdersList: React.FC = () => {
         ]),
     });
 
-    // Total price
-    doc.text(`Totalt: ${totalPrice} SEK`, 20, doc.autoTable.previous.finalY + 10);
+    // Add total and tax details
+    doc.text(`Totalt före moms: ${invoiceData.totalBeforeTax} SEK`, 20, doc.autoTable.previous.finalY + 10);
+    doc.text(`Moms (25%): ${invoiceData.taxAmount} SEK`, 20, doc.autoTable.previous.finalY + 20);
+    doc.text(`Totalt att betala: ${invoiceData.totalPrice} SEK`, 20, doc.autoTable.previous.finalY + 30);
 
-    // Save the PDF
-    doc.save(`faktura_${selectedOrder.id}.pdf`); // Här kommer inte TypeScript att klaga nu
+    // Save PDF
+    doc.save(`faktura_${selectedOrder.id}.pdf`);
     setShowPreviewModal(false);
 };
+  
 
   
 
